@@ -18,21 +18,36 @@ export const MedicoView = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const llamarSiguiente = async () => {
+const llamarSiguiente = async () => {
+        if (!user?.id) {
+            setError('Sesión inválida. Vuelve a iniciar sesión.');
+            return;
+        }
+
         setLoading(true);
         setError('');
+        
         try {
-            // Llamamos al endpoint que configuramos en el backend distribuido
-            const response = await api.post(`/turnos/llamar/${user?.id}`);
+            const response = await api.post(`/turnos/llamar/${user.id}`);
+
+            if (!response.data.turnoId) {
+                setPaciente(null); 
+                setError(response.data.mensaje || 'No hay pacientes en espera en este momento.');
+                return;
+            }
+
             setPaciente({
                 turnoId: response.data.turnoId,
                 nombre: response.data.paciente,
                 prioridad: response.data.prioridad || 0,
                 motivo: response.data.motivo || 'Consulta general'
             });
+
         } catch (err) {
             if (axios.isAxiosError(err)) {
-                setError(err.response?.data?.error || 'No hay pacientes en espera');
+                setError(err.response?.data?.error || 'Error de conexión con el servidor');
+            } else {
+                setError('Ocurrió un error inesperado al llamar al paciente.');
             }
             setPaciente(null);
         } finally {

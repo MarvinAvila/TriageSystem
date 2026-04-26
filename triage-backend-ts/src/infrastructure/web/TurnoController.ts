@@ -68,4 +68,13 @@ export class TurnoController {
         });
     }
   };
+
+  public obtenerTurnosPublicos = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const turnos = await this.triageService.obtenerTurnosPublicos();
+        res.status(200).json(turnos);
+    } catch (error: any) {
+        res.status(500).json({ error: 'Fallo al obtener turnos públicos' });
+    }
+};
 }

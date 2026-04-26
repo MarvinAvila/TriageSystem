@@ -20,16 +20,21 @@ export const LoginView = () => {
     setLoading(true);
 
     try {
-      const response = await api.post<UsuarioAuth>("/auth/login", {
+      const response = await api.post<{
+        mensaje: string;
+        usuario: UsuarioAuth;
+      }>("/auth/login", {
         login,
         passwordPlan,
       });
 
-      loginStore(response.data);
+      const usuarioAuth = response.data.usuario;
 
-      if (response.data.rol === "recepcion") navigate("/recepcion");
-      else if (response.data.rol === "medico") navigate("/medico");
-      else if (response.data.rol === "pantalla") navigate("/pantalla");
+      loginStore(usuarioAuth);
+
+      if (usuarioAuth.rol === "recepcion") navigate("/recepcion");
+      else if (usuarioAuth.rol === "medico") navigate("/medico");
+      else if (usuarioAuth.rol === "pantalla") navigate("/pantalla");
       else setError("Rol no reconocido para esta interfaz.");
     } catch (err) {
 

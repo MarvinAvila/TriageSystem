@@ -4,7 +4,6 @@ import { Sintomas } from '../../domain/models/Sintomas';
 export class SintomasRepository {
     
     // ESCRITURA: Va al nodo Primario. 
-    // Nota: PostgreSQL a través de 'pg' convierte automáticamente los objetos JS a JSONB.
     async create(sintomas: Sintomas): Promise<Sintomas> {
         const query = `
             INSERT INTO sintomas (turno_id, motivo_consulta, signos_vitales, prioridad_calculada)

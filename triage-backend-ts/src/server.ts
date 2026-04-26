@@ -46,6 +46,8 @@ app.get('/api/health', async (req: Request, res: Response) => {
     }
 });
 
+app.get('/api/turnos/publicos', turnoController.obtenerTurnosPublicos);
+
 // ==========================================
 // ARRANQUE DEL SERVIDOR
 // ==========================================
