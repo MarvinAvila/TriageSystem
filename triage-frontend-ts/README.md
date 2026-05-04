@@ -97,5 +97,5 @@ src/
 Proyecto para la **Facultad de Tecnologías Digitales Aplicadas (UNACH - Campus Tapachula)**
 Desarrollado por 
 ```
-**Marvin Edel Rivera Avila (AsHunter)**..
+Marvin Edel Rivera Avila (AsHunter)
 ```
