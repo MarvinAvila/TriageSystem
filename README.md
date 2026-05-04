@@ -1,6 +1,3 @@
-***
-
-```markdown
 # 🏥 Smart Triage System
 
 Un sistema integral cliente-servidor para la gestión clínica y triaje médico[cite: 1]. Esta plataforma optimiza el flujo de atención a pacientes mediante la asignación de turnos, evaluación de síntomas (triaje) y visualización en tiempo real a través de diferentes paneles de control para el personal médico y administrativo[cite: 1].
@@ -59,7 +56,7 @@ El sistema está dividido en dos aplicaciones principales:
 ---
 
 ## 📂 Estructura de Directorios
-```text
+```
 TriageSystem/
 ├── seeder.sql                   # Script de inicialización de la base de datos[cite: 1]
 ├── triage-backend-ts/           # API Backend[cite: 1]
