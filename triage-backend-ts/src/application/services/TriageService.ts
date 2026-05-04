@@ -90,13 +90,16 @@ export class TriageService {
       TurnoEstado.ATENDIENDO,
     );
 
-    // 👇 AHORA SÍ ENVIAMOS LOS DATOS REALES DE BD AL FRONTEND 👇
+    // 👇 AHORA ENVIAMOS LA INFORMACIÓN CLÍNICA COMPLETA AL FRONTEND 👇
     return {
       mensaje: "Paciente asignado",
       turnoId: siguienteTurno.id,
       paciente: siguienteTurno.paciente_nombre,
+      edad: siguienteTurno.edad,
+      curp: siguienteTurno.curp,
       prioridad: siguienteTurno.prioridad,
       motivo: siguienteTurno.motivo_consulta || "Sin motivo registrado",
+      signosVitales: siguienteTurno.signos_vitales || {}, // El JSON de signos vitales
     };
   }
   /**

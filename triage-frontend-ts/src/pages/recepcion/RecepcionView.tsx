@@ -2,28 +2,25 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { useAuthStore } from "../../store/authStore";
-import { type TurnoRegistroDTO } from "../../types";
 import axios from "axios";
 
 export const RecepcionView = () => {
-  // Obtenemos al recepcionista que inició sesión y la función para salir
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
   // Estados del formulario
   const [nombre, setNombre] = useState("");
   const [curp, setCurp] = useState("");
-  const [edad, setEdad] = useState<number | "">("");
+  const [edad, setEdad] = useState("");
   const [motivoConsulta, setMotivoConsulta] = useState("");
-  const [temperatura, setTemperatura] = useState<number | "">("");
-  const [frecuenciaCardiaca, setFrecuenciaCardiaca] = useState<number | "">("");
-  const [saturacionOxigeno, setSaturacionOxigeno] = useState<number | "">("");
+  const [temperatura, setTemperatura] = useState("");
+  const [frecuenciaCardiaca, setFrecuenciaCardiaca] = useState("");
+  const [saturacionOxigeno, setSaturacionOxigeno] = useState("");
 
-  const [mensaje, setMensaje] = useState<{
-    texto: string;
-    tipo: "success" | "error";
-  } | null>(null);
+  // Estados de UI
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleLogout = () => {
     logout();
@@ -32,33 +29,36 @@ export const RecepcionView = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMensaje(null);
-    setLoading(true);
 
-    // Construimos el DTO exactamente como lo espera tu backend
-    const turnoData: TurnoRegistroDTO = {
-      paciente: {
-        nombre,
-        curp: curp.toUpperCase(),
-        edad: Number(edad),
-      },
-      motivoConsulta,
-      signosVitales: {
-        temperatura: Number(temperatura),
-        frecuenciaCardiaca: Number(frecuenciaCardiaca),
-        saturacionOxigeno: Number(saturacionOxigeno),
-      },
-      recepcionistaId: user?.id || 0,
-    };
+    if (!user?.id) {
+      setError("Error de sesión: No se pudo identificar al operador.");
+      return;
+    }
+    
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
     try {
-      // Mandamos el JSON al backend distribuido
-      const response = await api.post("/turnos", turnoData);
+      // Estructura basada en tu TurnoRegistroDTO
+      const payload = {
+        recepcionistaId: user.id,
+        paciente: {
+          nombre,
+          curp,
+          edad: parseInt(edad, 10),
+        },
+        motivoConsulta,
+        signosVitales: {
+          temperatura: parseFloat(temperatura),
+          frecuenciaCardiaca: parseInt(frecuenciaCardiaca, 10),
+          saturacionOxigeno: parseInt(saturacionOxigeno, 10),
+        },
+      };
 
-      setMensaje({
-        texto: `¡Turno generado! Prioridad asignada: Nivel ${response.data.prioridad}`,
-        tipo: "success",
-      });
+      await api.post("/turnos", payload);
+
+      setSuccess(`¡Turno generado exitosamente para ${nombre}!`);
 
       // Limpiamos el formulario para el siguiente paciente
       setNombre("");
@@ -68,19 +68,14 @@ export const RecepcionView = () => {
       setTemperatura("");
       setFrecuenciaCardiaca("");
       setSaturacionOxigeno("");
-    } catch (error) {
-      // <-- Eliminamos el ': any'
-      // Verificamos de manera segura si el error viene de tu backend
-      if (axios.isAxiosError(error)) {
-        setMensaje({
-          texto: error.response?.data?.error || "Error al registrar paciente",
-          tipo: "error",
-        });
+
+      // Quitamos el mensaje de éxito después de 3 segundos
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.error || "Error al registrar el turno.");
       } else {
-        setMensaje({
-          texto: "Ocurrió un error inesperado al conectar con el servidor",
-          tipo: "error",
-        });
+        setError("Ocurrió un error inesperado al procesar la solicitud.");
       }
     } finally {
       setLoading(false);
@@ -88,179 +83,190 @@ export const RecepcionView = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <nav className="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center">
-        <h1 className="text-xl font-bold">🏥 Smart Triage - Recepción</h1>
+    <div className="min-h-screen bg-gray-100 pb-12">
+      {/* Navigation Bar */}
+      <nav className="bg-blue-800 text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-10">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🏥</span>
+          <h1 className="text-xl font-bold tracking-wide">
+            Smart Triage{" "}
+            <span className="font-light text-blue-200">| Recepción</span>
+          </h1>
+        </div>
         <div className="flex items-center gap-4">
-          <span className="text-sm bg-blue-700 px-3 py-1 rounded-full">
-            Operador: {user?.login}
-          </span>
+          <div className="hidden sm:flex flex-col text-right">
+            <span className="text-xs text-blue-200 uppercase tracking-wider font-semibold">
+              Operador Activo
+            </span>
+            <span className="text-sm font-bold">{user?.login}</span>
+          </div>
           <button
             onClick={handleLogout}
-            className="text-sm hover:underline font-semibold"
+            className="bg-blue-700 hover:bg-blue-600 border border-blue-500 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             Cerrar Sesión
           </button>
         </div>
       </nav>
 
-      {/* Contenedor Principal */}
-      <div className="max-w-4xl mx-auto p-6 mt-6 bg-white rounded-xl shadow-lg border border-gray-100">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
-          Registro de Nuevo Paciente
-        </h2>
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-4 mt-8">
+        <div className="mb-6">
+          <h2 className="text-2xl font-extrabold text-gray-800">
+            Registro de Nuevo Paciente
+          </h2>
+          <p className="text-gray-500">
+            Capture los datos iniciales para asignar una prioridad en la sala de
+            espera.
+          </p>
+        </div>
 
-        {mensaje && (
-          <div
-            className={`p-4 rounded-lg mb-6 text-center font-medium ${mensaje.tipo === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
-          >
-            {mensaje.texto}
+        {/* Alertas */}
+        {error && (
+          <div className="bg-red-50 text-red-700 p-4 rounded-xl mb-6 border-l-4 border-red-500 font-medium">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="bg-green-50 text-green-700 p-4 rounded-xl mb-6 border-l-4 border-green-500 font-medium">
+            {success}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Sección: Datos del Paciente */}
-          <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-              👤 Datos Personales
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre Completo
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Tarjeta: Datos Personales */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2 border-b pb-3">
+                <span>👤</span> Datos Personales
+              </h3>
+
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Nombre Completo
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    placeholder="Ej. Juan Pérez"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    CURP
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={curp}
+                    onChange={(e) => setCurp(e.target.value.toUpperCase())}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all uppercase"
+                    placeholder="18 caracteres"
+                    maxLength={18}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Edad
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    value={edad}
+                    onChange={(e) => setEdad(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    placeholder="Años cumplidos"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  CURP
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={curp}
-                  onChange={(e) => setCurp(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none uppercase"
-                  maxLength={18}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Edad
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  max="120"
-                  value={edad}
-                  onChange={(e) =>
-                    setEdad(e.target.value === "" ? "" : Number(e.target.value))
-                  }
-                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                />
+            </div>
+
+            {/* Tarjeta: Evaluación Inicial */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2 border-b pb-3">
+                <span>🩺</span> Evaluación Inicial (Triage)
+              </h3>
+
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Motivo de Consulta (Síntomas)
+                  </label>
+                  <textarea
+                    required
+                    value={motivoConsulta}
+                    onChange={(e) => setMotivoConsulta(e.target.value)}
+                    rows={2}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"
+                    placeholder="Describa brevemente los síntomas principales..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      Temp. (°C)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      required
+                      value={temperatura}
+                      onChange={(e) => setTemperatura(e.target.value)}
+                      className="w-full px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                      placeholder="37.5"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      Frec. Cardíaca
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      value={frecuenciaCardiaca}
+                      onChange={(e) => setFrecuenciaCardiaca(e.target.value)}
+                      className="w-full px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                      placeholder="80 lpm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      Sat. O2 (%)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      value={saturacionOxigeno}
+                      onChange={(e) => setSaturacionOxigeno(e.target.value)}
+                      className="w-full px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                      placeholder="98%"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Sección: Triage Clínico */}
-          <div className="bg-red-50 p-5 rounded-lg border border-red-100">
-            <h3 className="text-lg font-semibold text-red-800 mb-4 flex items-center gap-2">
-              🩺 Evaluación Inicial (Triage)
-            </h3>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Motivo de Consulta (Síntomas principales)
-              </label>
-              <textarea
-                required
-                value={motivoConsulta}
-                onChange={(e) => setMotivoConsulta(e.target.value)}
-                rows={2}
-                className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500 outline-none resize-none"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Temperatura (°C)
-                </label>
-                <input
-                  type="number"
-                  required
-                  step="0.1"
-                  value={temperatura}
-                  onChange={(e) =>
-                    setTemperatura(
-                      e.target.value === "" ? "" : Number(e.target.value),
-                    )
-                  }
-                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500 outline-none"
-                  placeholder="Ej. 37.5"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Frecuencia Cardíaca (lpm)
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  value={frecuenciaCardiaca}
-                  onChange={(e) =>
-                    setFrecuenciaCardiaca(
-                      e.target.value === "" ? "" : Number(e.target.value),
-                    )
-                  }
-                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500 outline-none"
-                  placeholder="Ej. 80"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Saturación Oxígeno (%)
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  max="100"
-                  value={saturacionOxigeno}
-                  onChange={(e) =>
-                    setSaturacionOxigeno(
-                      e.target.value === "" ? "" : Number(e.target.value),
-                    )
-                  }
-                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500 outline-none"
-                  placeholder="Ej. 98"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-4">
+          {/* Botón de Enviar */}
+          <div className="flex justify-end mt-8">
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md disabled:bg-blue-400"
+              className="w-full md:w-auto md:px-12 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 disabled:bg-blue-400 text-lg flex justify-center items-center gap-2"
             >
               {loading
-                ? "Calculando Prioridad y Registrando..."
+                ? "Generando Turno..."
                 : "Registrar Paciente y Generar Turno"}
             </button>
           </div>
         </form>
-      </div>
+      </main>
     </div>
   );
 };

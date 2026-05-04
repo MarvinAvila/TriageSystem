@@ -32,9 +32,12 @@ export class TurnoRepository {
             SELECT 
                 t.id, 
                 p.nombre as paciente_nombre, 
+                p.edad,                 -- NUEVO
+                p.curp,                 -- NUEVO
                 t.prioridad, 
                 t.ts_creado,
-                s.motivo_consulta 
+                s.motivo_consulta,
+                s.signos_vitales        -- NUEVO (Es un JSONB)
             FROM turno t
             JOIN paciente p ON t.paciente_id = p.id
             LEFT JOIN sintomas s ON t.id = s.turno_id
