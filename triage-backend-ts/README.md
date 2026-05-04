@@ -86,6 +86,8 @@ ngrok http --domain=tu-dominio-fijo.ngrok-free.app 8080
 - Se implementan transacciones SQL para asegurar la integridad entre las tablas `paciente`, `turno` y `sintomas`.
 
 ---
-**Desarrollado por:** Marvin Edel Rivera Avila (AsHunter)
+**Desarrollado por:** 
+```
+Marvin Edel Rivera Avila (AsHunter)
 *8vo Semestre - Facultad de Tecnologías Digitales Aplicadas (UNACH)*
 ```
