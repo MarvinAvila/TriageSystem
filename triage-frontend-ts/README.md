@@ -59,8 +59,7 @@ Cliente web para el **Sistema de Triage Inteligente**, una aplicación orientada
 2. Instala las dependencias:
    ```bash
    npm install
-   
-```
+   ```
 
 3. Configura las variables de entorno:
    Crea un archivo `.env` en la raíz del frontend basándote en el entorno.
