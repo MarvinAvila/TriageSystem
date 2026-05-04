@@ -137,4 +137,3 @@ psql -U tu_usuario -d tu_base_de_datos -f ../seeder.sql
 ---
 
 **Desarrollado con ❤️ para optimizar la atención médica.**
-```
