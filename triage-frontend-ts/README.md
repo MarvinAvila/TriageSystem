@@ -94,7 +94,8 @@ src/
 ---
 
 ## 👨‍💻 Autor
-
-Desarrollado por **Marvin Edel Rivera Avila (Hunter)**.
-Proyecto para la **Facultad de Tecnologías Digitales Aplicadas (UNACH - Campus Tapachula)**.
+Proyecto para la **Facultad de Tecnologías Digitales Aplicadas (UNACH - Campus Tapachula)**
+Desarrollado por 
+```
+**Marvin Edel Rivera Avila (AsHunter)**..
 ```
