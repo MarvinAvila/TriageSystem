@@ -89,5 +89,5 @@ ngrok http --domain=tu-dominio-fijo.ngrok-free.app 8080
 **Desarrollado por:** 
 ```
 Marvin Edel Rivera Avila (AsHunter)
-*8vo Semestre - Facultad de Tecnologías Digitales Aplicadas (UNACH)*
+8vo Semestre - Facultad de Tecnologías Digitales Aplicadas (UNACH)
 ```
