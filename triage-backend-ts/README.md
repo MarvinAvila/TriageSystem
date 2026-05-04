@@ -1,7 +1,3 @@
-
----
-
-```markdown
 # 🏥 Smart Triage System - Backend Node.js
 ### Sistema de Priorización Médica con Arquitectura Limpia y Base de Datos Distribuida
 
@@ -93,5 +89,3 @@ ngrok http --domain=tu-dominio-fijo.ngrok-free.app 8080
 **Desarrollado por:** Marvin Edel Rivera Avila (AsHunter)
 *8vo Semestre - Facultad de Tecnologías Digitales Aplicadas (UNACH)*
 ```
-
----
